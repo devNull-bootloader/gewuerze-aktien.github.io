@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Spice Market ⚜</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!--
+    Firebase SDK – only loaded when DB_MODE === 'firebase'.
+    Comment/uncomment the lines below accordingly.
+  -->
+  <!-- <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script> -->
+  <!-- <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script> -->
+
+  <!-- Game scripts (order matters) -->
+  <script src="js/config.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+
+  <!-- ── Site Header ──────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <span class="brand">⚜ Spice Market — Admin Console</span>
+    <div class="header-stats">
+      <div>
+        <div class="stat-label">Time Left</div>
+        <div id="timer-display">—</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       LOGIN SECTION  (shown until correct code is entered)
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="login-section" class="login-section">
+    <div class="login-card">
+      <h1>🔑 Admin Access</h1>
+      <p>Enter your administrator code to access the game console.</p>
+      <form id="login-form" class="login-form">
+        <input
+          type="password"
+          id="admin-code-input"
+          placeholder="Administrator code…"
+          autocomplete="off"
+          required
+        />
+        <button type="submit" class="btn btn-primary">Unlock Console</button>
+        <div class="login-error" id="login-error" role="alert"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       ADMIN PANEL  (hidden until authenticated)
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div id="admin-panel" class="admin-panel hidden">
+
+    <!-- ── LEFT COLUMN ────────────────────────────────────────────────── -->
+    <div class="admin-main">
+
+      <!-- Round Controls -->
+      <div class="admin-card">
+        <div class="section-title">⚙️ Round Controls</div>
+        <div class="admin-timer" id="timer-display-large">5:00</div>
+        <div class="control-row" style="margin-top:.75rem">
+          <button id="btn-start" class="btn btn-start">▶ Start Round</button>
+          <button id="btn-stop"  class="btn btn-stop"  disabled>⏹ End Round</button>
+          <button id="btn-reset" class="btn btn-outline">↺ Reset Game</button>
+        </div>
+        <p style="margin-top:.75rem;font-size:.8rem;color:var(--cream-dim)">
+          Starting a round locks in new prices and opens trading for all players.
+          Ending the round freezes the leaderboard.
+        </p>
+      </div>
+
+      <!-- Live Prices -->
+      <div class="admin-card">
+        <div class="section-title">📊 Live Prices</div>
+        <div class="price-grid">
+          <div class="price-stat">
+            <div class="stat-label">🌶️ Pepper</div>
+            <div class="stat-value" id="price-pepper">—</div>
+          </div>
+          <div class="price-stat">
+            <div class="stat-label">🪵 Cinnamon</div>
+            <div class="stat-value" id="price-cinnamon">—</div>
+          </div>
+          <div class="price-stat">
+            <div class="stat-label">🌿 Cardamom</div>
+            <div class="stat-value" id="price-cardamom">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="admin-card">
+        <div class="section-title">🏆 Leaderboard</div>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Trader</th>
+              <th>Net Worth</th>
+              <th>Gold</th>
+              <th>P / C / Ca</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <tr><td colspan="5" style="text-align:center;opacity:.6">No players yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div><!-- /admin-main -->
+
+    <!-- ── RIGHT COLUMN ───────────────────────────────────────────────── -->
+    <div class="admin-side">
+
+      <!-- Current Event Banner -->
+      <div class="admin-card">
+        <div class="section-title">📜 Current Event</div>
+        <div id="event-banner" class="event-banner">No event active</div>
+      </div>
+
+      <!-- Manual Event Injection -->
+      <div class="admin-card">
+        <div class="section-title">⚡ Trigger Event Manually</div>
+        <p style="font-size:.8rem;color:var(--cream-dim);margin-bottom:.6rem">
+          Click any event to fire it instantly:
+        </p>
+        <div class="manual-events" id="manual-events-list">
+          <!-- Buttons generated by admin.js -->
+        </div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="admin-card">
+        <div class="section-title">🕰️ Event Log</div>
+        <ul class="event-log" id="event-log" aria-live="polite"></ul>
+      </div>
+
+    </div><!-- /admin-side -->
+
+  </div><!-- /admin-panel -->
+
+  <!-- ── Footer ───────────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <a href="index.html">← Back to Player Page</a>
+    &middot; Spice Market of 1500 &middot; Admin Console
+  </footer>
+
+  <!-- Build manual-event-buttons after DOM is ready (needs HISTORICAL_EVENTS) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const list = document.getElementById('manual-events-list');
+      if (!list || typeof HISTORICAL_EVENTS === 'undefined') return;
+      HISTORICAL_EVENTS.forEach((ev, i) => {
+        const btn = document.createElement('button');
+        btn.className = `btn btn-outline`;
+        btn.dataset.eventIdx = i;
+        btn.textContent = ev.text;
+        list.appendChild(btn);
+      });
+    });
+  </script>
+
+</body>
+</html>
