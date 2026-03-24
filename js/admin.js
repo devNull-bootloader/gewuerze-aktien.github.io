@@ -55,6 +55,7 @@ function bindDOMRefs() {
   timerDisplay      = document.getElementById('timer-display');
   timerDisplayLarge = document.getElementById('timer-display-large');
   lbBody        = document.getElementById('leaderboard-body');
+  eventLogEl    = document.getElementById('event-log');
   eventBannerEl = document.getElementById('event-banner');
   manualEventBtns = document.querySelectorAll('[data-event-idx]');
 
@@ -187,8 +188,10 @@ function startSimulation() {
 }
 
 function resumeSimulation() {
-  roundActive    = true;
-  roundStartTime = roundStartTime || (Date.now() - (CONFIG.ROUND_DURATION * 1000 - remainingTime() * 1000));
+  roundActive = true;
+  // roundStartTime is already set from the loaded game state in applyGameState().
+  // If somehow it's missing, fall back to treating the full round as just starting.
+  if (!roundStartTime) roundStartTime = Date.now();
   startSimulation();
 }
 
