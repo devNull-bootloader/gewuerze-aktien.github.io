@@ -78,7 +78,7 @@ function setupLoginForm() {
       showAdminPanel();
       await bootAdminPanel();
     } else {
-      loginError.textContent = '❌ Incorrect code. Try again.';
+      loginError.textContent = '❌ Falscher Code. Bitte erneut versuchen.';
       codeInput.value = '';
       codeInput.focus();
     }
@@ -164,7 +164,7 @@ async function stopRound() {
 }
 
 async function resetGame() {
-  if (!confirm('Reset all player portfolios and prices? This cannot be undone.')) return;
+  if (!confirm('Alle Spielerportfolios und Preise zurücksetzen? Dies kann nicht rückgängig gemacht werden.')) return;
   roundActive = false;
   clearSimulation();
 
@@ -329,7 +329,7 @@ function renderLeaderboard(players, prices) {
   });
 
   if (!entries.length) {
-    lbBody.innerHTML = '<tr><td colspan="5" style="text-align:center;opacity:.6">No players yet</td></tr>';
+    lbBody.innerHTML = '<tr><td colspan="5" style="text-align:center;opacity:.6">Noch keine Spieler</td></tr>';
   }
 }
 
