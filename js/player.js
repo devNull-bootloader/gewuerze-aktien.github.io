@@ -26,9 +26,9 @@ let lastEventTs    = 0;   // prevent re-showing the same event
 
 /* ── Spice display metadata ─────────────────────────────────────────────── */
 const SPICE_META = {
-  pepper:   { label: 'Pepper',   color: '#e74c3c', emoji: '🌶️' },
-  cinnamon: { label: 'Cinnamon', color: '#e67e22', emoji: '🪵' },
-  cardamom: { label: 'Cardamom', color: '#2ecc71', emoji: '🌿' },
+  pepper:   { label: 'Pfeffer',   color: '#e74c3c', emoji: '🌶️' },
+  cinnamon: { label: 'Zimt',      color: '#e67e22', emoji: '🪵' },
+  cardamom: { label: 'Kardamom',  color: '#2ecc71', emoji: '🌿' },
 };
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -100,7 +100,7 @@ function showGameUI() {
   document.getElementById('join-screen').classList.add('hidden');
   document.getElementById('game-ui').classList.remove('hidden');
 
-  document.getElementById('player-name-display').textContent = playerName || 'Trader';
+  document.getElementById('player-name-display').textContent = playerName || 'Händler';
   initChart();
   renderSpiceCards();
   updatePortfolioDisplay();
@@ -192,10 +192,10 @@ function renderSpiceCards() {
         <div class="spice-price" id="spice-price-${spice}">${formatGold(currentPrices[spice])}</div>
         <div class="spice-change" id="spice-change-${spice}"></div>
         <div class="trade-buttons">
-          <button class="btn btn-buy"  data-spice="${spice}" data-action="buy">Buy 1 ⬆</button>
-          <button class="btn btn-sell" data-spice="${spice}" data-action="sell">Sell 1 ⬇</button>
+          <button class="btn btn-buy"  data-spice="${spice}" data-action="buy">Kaufen 1 ⬆</button>
+          <button class="btn btn-sell" data-spice="${spice}" data-action="sell">Verkaufen 1 ⬇</button>
         </div>
-        <div class="holding-display" id="holding-${spice}">Holding: 0</div>
+        <div class="holding-display" id="holding-${spice}">Bestand: 0</div>
       </div>`);
   }
   updateSpiceCardPrices(currentPrices, null);
@@ -229,7 +229,7 @@ function updateSpiceCardPrices(prices, prevPrices) {
     }
 
     const holdingEl = document.getElementById(`holding-${spice}`);
-    if (holdingEl) holdingEl.textContent = `Holding: ${playerHoldings[spice] || 0}`;
+    if (holdingEl) holdingEl.textContent = `Bestand: ${playerHoldings[spice] || 0}`;
   }
 }
 
@@ -245,7 +245,7 @@ function bindTradeButtons() {
     const action = btn.dataset.action;
 
     if (!roundActive) {
-      showToast('⏳ Wait for the round to start!');
+      showToast('⏳ Warte auf den Rundenbeginn!');
       return;
     }
 
@@ -259,14 +259,14 @@ async function executeTrade(spice, action) {
 
   if (action === 'buy') {
     if (playerGold < price) {
-      showToast('❌ Not enough gold!');
+      showToast('❌ Nicht genug Gold!');
       return;
     }
     playerGold -= price;
     playerHoldings[spice] = (playerHoldings[spice] || 0) + 1;
   } else {
     if ((playerHoldings[spice] || 0) < 1) {
-      showToast(`❌ No ${spice} to sell!`);
+      showToast(`❌ Kein ${SPICE_META[spice].label} zum Verkaufen!`);
       return;
     }
     playerGold += price;
@@ -283,8 +283,8 @@ async function executeTrade(spice, action) {
   updatePortfolioDisplay();
   updateSpiceCardPrices(currentPrices, null);
   showToast(action === 'buy'
-    ? `✅ Bought 1 ${SPICE_META[spice].label} for ${formatGold(price)}`
-    : `✅ Sold 1 ${SPICE_META[spice].label} for ${formatGold(price)}`);
+    ? `✅ 1 ${SPICE_META[spice].label} gekauft für ${formatGold(price)}`
+    : `✅ 1 ${SPICE_META[spice].label} verkauft für ${formatGold(price)}`);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -298,7 +298,7 @@ function updatePortfolioDisplay() {
 
   for (const spice of Object.keys(SPICE_META)) {
     const el = document.getElementById(`holding-${spice}`);
-    if (el) el.textContent = `Holding: ${playerHoldings[spice] || 0}`;
+    if (el) el.textContent = `Bestand: ${playerHoldings[spice] || 0}`;
     const portEl = document.getElementById(`port-${spice}`);
     if (portEl) portEl.textContent = playerHoldings[spice] || 0;
   }
@@ -373,7 +373,7 @@ function updateTimerDisplay() {
   const el = document.getElementById('timer-display');
   if (!el) return;
   if (!roundActive || !roundStartTime) {
-    el.textContent = roundActive ? '…' : 'Waiting…';
+    el.textContent = roundActive ? '…' : 'Warten…';
     return;
   }
   const elapsed = (Date.now() - roundStartTime) / 1000;

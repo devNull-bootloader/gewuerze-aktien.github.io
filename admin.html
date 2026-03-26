@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin – Spice Market ⚜</title>
+  <title>Admin – Gewürzmarkt ⚜</title>
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css" />
@@ -25,10 +25,10 @@
 
   <!-- ── Site Header ──────────────────────────────────────────────────── -->
   <header class="site-header">
-    <span class="brand">⚜ Spice Market — Admin Console</span>
+    <span class="brand">⚜ Gewürzmarkt — Admin-Konsole</span>
     <div class="header-stats">
       <div>
-        <div class="stat-label">Time Left</div>
+        <div class="stat-label">Verbleibende Zeit</div>
         <div id="timer-display">—</div>
       </div>
     </div>
@@ -39,17 +39,17 @@
   ══════════════════════════════════════════════════════════════════════ -->
   <section id="login-section" class="login-section">
     <div class="login-card">
-      <h1>🔑 Admin Access</h1>
-      <p>Enter your administrator code to access the game console.</p>
+      <h1>🔑 Administratorzugang</h1>
+      <p>Gib deinen Administrator-Code ein, um auf die Spielkonsole zuzugreifen.</p>
       <form id="login-form" class="login-form">
         <input
           type="password"
           id="admin-code-input"
-          placeholder="Administrator code…"
+          placeholder="Administrator-Code…"
           autocomplete="off"
           required
         />
-        <button type="submit" class="btn btn-primary">Unlock Console</button>
+        <button type="submit" class="btn btn-primary">Konsole entsperren</button>
         <div class="login-error" id="login-error" role="alert"></div>
       </form>
     </div>
@@ -65,33 +65,33 @@
 
       <!-- Round Controls -->
       <div class="admin-card">
-        <div class="section-title">⚙️ Round Controls</div>
+        <div class="section-title">⚙️ Runden-Steuerung</div>
         <div class="admin-timer" id="timer-display-large">5:00</div>
         <div class="control-row" style="margin-top:.75rem">
-          <button id="btn-start" class="btn btn-start">▶ Start Round</button>
-          <button id="btn-stop"  class="btn btn-stop"  disabled>⏹ End Round</button>
-          <button id="btn-reset" class="btn btn-outline">↺ Reset Game</button>
+          <button id="btn-start" class="btn btn-start">▶ Runde starten</button>
+          <button id="btn-stop"  class="btn btn-stop"  disabled>⏹ Runde beenden</button>
+          <button id="btn-reset" class="btn btn-outline">↺ Spiel zurücksetzen</button>
         </div>
         <p style="margin-top:.75rem;font-size:.8rem;color:var(--cream-dim)">
-          Starting a round locks in new prices and opens trading for all players.
-          Ending the round freezes the leaderboard.
+          Das Starten einer Runde legt neue Preise fest und öffnet den Handel für alle Spieler.
+          Das Beenden der Runde friert die Rangliste ein.
         </p>
       </div>
 
       <!-- Live Prices -->
       <div class="admin-card">
-        <div class="section-title">📊 Live Prices</div>
+        <div class="section-title">📊 Live-Preise</div>
         <div class="price-grid">
           <div class="price-stat">
-            <div class="stat-label">🌶️ Pepper</div>
+            <div class="stat-label">🌶️ Pfeffer</div>
             <div class="stat-value" id="price-pepper">—</div>
           </div>
           <div class="price-stat">
-            <div class="stat-label">🪵 Cinnamon</div>
+            <div class="stat-label">🪵 Zimt</div>
             <div class="stat-value" id="price-cinnamon">—</div>
           </div>
           <div class="price-stat">
-            <div class="stat-label">🌿 Cardamom</div>
+            <div class="stat-label">🌿 Kardamom</div>
             <div class="stat-value" id="price-cardamom">—</div>
           </div>
         </div>
@@ -99,19 +99,19 @@
 
       <!-- Leaderboard -->
       <div class="admin-card">
-        <div class="section-title">🏆 Leaderboard</div>
+        <div class="section-title">🏆 Rangliste</div>
         <table class="leaderboard-table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Trader</th>
-              <th>Net Worth</th>
+              <th>Händler</th>
+              <th>Nettovermögen</th>
               <th>Gold</th>
-              <th>P / C / Ca</th>
+              <th>P / Z / K</th>
             </tr>
           </thead>
           <tbody id="leaderboard-body">
-            <tr><td colspan="5" style="text-align:center;opacity:.6">No players yet</td></tr>
+            <tr><td colspan="5" style="text-align:center;opacity:.6">Noch keine Spieler</td></tr>
           </tbody>
         </table>
       </div>
@@ -123,15 +123,15 @@
 
       <!-- Current Event Banner -->
       <div class="admin-card">
-        <div class="section-title">📜 Current Event</div>
-        <div id="event-banner" class="event-banner">No event active</div>
+        <div class="section-title">📜 Aktuelles Ereignis</div>
+        <div id="event-banner" class="event-banner">Kein Ereignis aktiv</div>
       </div>
 
       <!-- Manual Event Injection -->
       <div class="admin-card">
-        <div class="section-title">⚡ Trigger Event Manually</div>
+        <div class="section-title">⚡ Ereignis manuell auslösen</div>
         <p style="font-size:.8rem;color:var(--cream-dim);margin-bottom:.6rem">
-          Click any event to fire it instantly:
+          Klicke auf ein Ereignis, um es sofort auszulösen:
         </p>
         <div class="manual-events" id="manual-events-list">
           <!-- Buttons generated by admin.js -->
@@ -140,7 +140,7 @@
 
       <!-- Event Log -->
       <div class="admin-card">
-        <div class="section-title">🕰️ Event Log</div>
+        <div class="section-title">🕰️ Ereignisprotokoll</div>
         <ul class="event-log" id="event-log" aria-live="polite"></ul>
       </div>
 
@@ -150,8 +150,8 @@
 
   <!-- ── Footer ───────────────────────────────────────────────────────── -->
   <footer class="site-footer">
-    <a href="index.html">← Back to Player Page</a>
-    &middot; Spice Market of 1500 &middot; Admin Console
+    <a href="index.html">← Zur Spielerseite</a>
+    &middot; Gewürzmarkt von 1500 &middot; Admin-Konsole
   </footer>
 
   <!-- Build manual-event-buttons after DOM is ready (needs HISTORICAL_EVENTS) -->
