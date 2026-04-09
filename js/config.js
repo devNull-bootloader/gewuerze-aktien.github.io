@@ -40,7 +40,7 @@ const CONFIG = {
   CHART_HISTORY_POINTS: 30,        // Number of data points shown on chart
 
   /* ── Database mode ──────────────────────────────────────────────────── */
-  DB_MODE: 'demo',                 // 'demo' | 'firebase'
+  DB_MODE: 'firebase',                 // 'demo' | 'firebase'
 
   /* ── Firebase config (only needed when DB_MODE = 'firebase') ─────────
    * 1. Go to https://console.firebase.google.com and create a project.
