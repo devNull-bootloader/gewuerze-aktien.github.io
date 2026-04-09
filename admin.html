@@ -7,6 +7,7 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
 
   <!-- Game scripts (order matters) -->
   <script src="js/config.js"></script>
@@ -140,6 +141,18 @@
     </div><!-- /admin-side -->
 
   </div><!-- /admin-panel -->
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TRADING VIEW  (shown when login code is TRADING)
+  ══════════════════════════════════════════════════════════════════════ -->
+  <main id="trading-panel" class="trading-panel hidden">
+    <section class="chart-section">
+      <div class="section-title">📈 Live-Gewürzpreise</div>
+      <div class="chart-wrap">
+        <canvas id="trading-price-chart"></canvas>
+      </div>
+    </section>
+  </main>
 
   <!-- ── Footer ───────────────────────────────────────────────────────── -->
   <footer class="site-footer">

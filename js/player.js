@@ -23,6 +23,7 @@ let roundStartTime = null;
 let priceChart     = null;
 let timerInterval  = null;
 let lastEventTs    = 0;   // prevent re-showing the same event
+let latestPlayers  = {};
 
 /* ── Spice display metadata ─────────────────────────────────────────────── */
 const SPICE_META = {
@@ -109,6 +110,8 @@ function showGameUI() {
   // Set waiting overlay state based on current round status
   const overlay = document.getElementById('waiting-overlay');
   if (overlay) overlay.classList.toggle('hidden', roundActive);
+  updatePublicLeaderboardVisibility();
+  renderPublicLeaderboard(latestPlayers, currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -321,6 +324,8 @@ function onGameStateUpdate(gs) {
   // Update price cards
   updateSpiceCardPrices(currentPrices, prevPrices);
   updatePortfolioDisplay();
+  renderPublicLeaderboard(latestPlayers, currentPrices);
+  updatePublicLeaderboardVisibility();
 
   // Show/hide waiting overlay (only if player has joined)
   if (playerId) {
@@ -349,6 +354,7 @@ function onGameStateUpdate(gs) {
 }
 
 function onPlayersUpdate(players) {
+  latestPlayers = players || {};
   if (!playerId) return;
   const me = players[playerId];
   if (!me) return;
@@ -356,6 +362,7 @@ function onPlayersUpdate(players) {
   playerGold     = me.gold     ?? playerGold;
   playerHoldings = me.holdings ?? playerHoldings;
   updatePortfolioDisplay();
+  renderPublicLeaderboard(latestPlayers, currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -410,4 +417,49 @@ function showToast(message) {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 400);
   }, 3000);
+}
+
+function updatePublicLeaderboardVisibility() {
+  const section = document.getElementById('public-leaderboard-section');
+  if (!section) return;
+  section.classList.toggle('hidden', roundActive);
+}
+
+function renderPublicLeaderboard(players, prices) {
+  const body = document.getElementById('public-leaderboard-body');
+  if (!body) return;
+
+  const entries = Object.values(players || {})
+    .filter(p => p && p.name)
+    .map(p => ({
+      name: p.name,
+      worth: calcNetWorth(p.gold || 0, p.holdings || {}, prices),
+    }))
+    .sort((a, b) => b.worth - a.worth);
+
+  body.innerHTML = '';
+  entries.forEach((entry, idx) => {
+    const tr = document.createElement('tr');
+    const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+    tr.innerHTML = `
+      <td>${medal}</td>
+      <td>${escHtml(entry.name)}</td>
+      <td>${formatGold(entry.worth)}</td>`;
+    if (idx === 0) tr.classList.add('rank-gold');
+    else if (idx === 1) tr.classList.add('rank-silver');
+    else if (idx === 2) tr.classList.add('rank-bronze');
+    body.appendChild(tr);
+  });
+
+  if (!entries.length) {
+    body.innerHTML = '<tr><td colspan="3" style="text-align:center;opacity:.6">Noch keine Spieler</td></tr>';
+  }
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }

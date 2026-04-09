@@ -523,6 +523,15 @@ input[type="password"]:focus {
 
 .admin-main { display: flex; flex-direction: column; gap: 1.25rem; }
 .admin-side { display: flex; flex-direction: column; gap: 1.25rem; }
+.trading-panel {
+  max-width: 1100px;
+  margin: 1.25rem auto;
+  padding: 0 1rem;
+}
+.admin-body.trading-only .site-header,
+.admin-body.trading-only .site-footer {
+  display: none;
+}
 
 /* ── Admin cards ────────────────────────────────────────────────────────── */
 .admin-card {

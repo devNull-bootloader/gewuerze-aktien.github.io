@@ -18,9 +18,19 @@ let leaderboardInterval = null;
 let currentPrices    = { ...CONFIG.STARTING_PRICES };
 let roundActive      = false;
 let roundStartTime   = null;
+let tradingMode      = false;
+let tradingChart     = null;
+let latestGameState  = null;
+const TRADING_VIEW_CODE = 'TRADING';
+const TRADING_SPICE_META = {
+  pepper:   { label: 'Pfeffer', color: '#e74c3c' },
+  cinnamon: { label: 'Zimt', color: '#e67e22' },
+  cardamom: { label: 'Kardamom', color: '#2ecc71' },
+};
 
 /* ── DOM refs (populated on DOMContentLoaded) ──────────────────────────── */
 let loginSection, adminPanel, codeInput, loginError;
+let tradingPanel, tradingChartCanvas;
 let btnStart, btnStop, btnReset;
 let timerDisplay, timerDisplayLarge;
 let lbBody;
@@ -37,9 +47,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupLoginForm();
 
   // Check if already authenticated this session
-  if (sessionStorage.getItem('spice_admin_auth') === CONFIG.ADMIN_CODE) {
-    showAdminPanel();
-    await bootAdminPanel();
+  const savedAuth = sessionStorage.getItem('spice_admin_auth');
+  const savedMode = sessionStorage.getItem('spice_admin_mode');
+  if (savedAuth === CONFIG.ADMIN_CODE || (savedAuth === TRADING_VIEW_CODE && savedMode === 'trading')) {
+    tradingMode = savedAuth === TRADING_VIEW_CODE && savedMode === 'trading';
+    showAuthenticatedView();
+    await bootByMode();
   }
 });
 
@@ -47,6 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 function bindDOMRefs() {
   loginSection  = document.getElementById('login-section');
   adminPanel    = document.getElementById('admin-panel');
+  tradingPanel  = document.getElementById('trading-panel');
+  tradingChartCanvas = document.getElementById('trading-price-chart');
   codeInput     = document.getElementById('admin-code-input');
   loginError    = document.getElementById('login-error');
   btnStart      = document.getElementById('btn-start');
@@ -72,11 +87,13 @@ function setupLoginForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const entered = codeInput.value.trim();
-    if (entered === CONFIG.ADMIN_CODE) {
+    if (entered === CONFIG.ADMIN_CODE || entered === TRADING_VIEW_CODE) {
+      tradingMode = entered === TRADING_VIEW_CODE;
       sessionStorage.setItem('spice_admin_auth', entered);
+      sessionStorage.setItem('spice_admin_mode', tradingMode ? 'trading' : 'admin');
       loginError.textContent = '';
-      showAdminPanel();
-      await bootAdminPanel();
+      showAuthenticatedView();
+      await bootByMode();
     } else {
       loginError.textContent = '❌ Falscher Code. Bitte erneut versuchen.';
       codeInput.value = '';
@@ -85,9 +102,28 @@ function setupLoginForm() {
   });
 }
 
+function showAuthenticatedView() {
+  if (tradingMode) showTradingPanel();
+  else showAdminPanel();
+}
+
 function showAdminPanel() {
   loginSection.classList.add('hidden');
+  tradingPanel?.classList.add('hidden');
   adminPanel.classList.remove('hidden');
+  document.body.classList.remove('trading-only');
+}
+
+function showTradingPanel() {
+  loginSection.classList.add('hidden');
+  adminPanel.classList.add('hidden');
+  tradingPanel?.classList.remove('hidden');
+  document.body.classList.add('trading-only');
+}
+
+async function bootByMode() {
+  if (tradingMode) await bootTradingPanel();
+  else await bootAdminPanel();
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -127,6 +163,17 @@ async function bootAdminPanel() {
   // Update leaderboard immediately and every 5 s
   const players = await db.getPlayers();
   renderLeaderboard(players, gs.prices);
+}
+
+async function bootTradingPanel() {
+  db = createDB(CONFIG);
+  await db.init();
+  initTradingChart();
+  db.subscribeGameState(onGameStateUpdate);
+  const gs = await db.getGameState();
+  latestGameState = gs;
+  applyGameState(gs);
+  updateTradingChart(gs.priceHistory || {}, gs.prices || currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -261,7 +308,9 @@ async function fireEvent(event) {
  * Reactive updates from DB
  * ════════════════════════════════════════════════════════════════════════ */
 function onGameStateUpdate(gs) {
+  latestGameState = gs;
   applyGameState(gs);
+  if (tradingMode) updateTradingChart(gs.priceHistory || {}, gs.prices || currentPrices);
 }
 
 function applyGameState(gs) {
@@ -353,4 +402,59 @@ function appendEventLog(event) {
 
 function escHtml(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function initTradingChart() {
+  if (!tradingChartCanvas || typeof Chart === 'undefined') return;
+  const ctx = tradingChartCanvas.getContext('2d');
+  if (!ctx) return;
+
+  const labels = Array.from({ length: CONFIG.CHART_HISTORY_POINTS }, (_, i) => i + 1);
+  tradingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: Object.entries(TRADING_SPICE_META).map(([spice, meta]) => ({
+        label: meta.label,
+        data: Array(CONFIG.CHART_HISTORY_POINTS).fill(null),
+        borderColor: meta.color,
+        backgroundColor: `${meta.color}22`,
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0.3,
+        fill: false,
+      })),
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 200 },
+      scales: {
+        x: { display: false },
+        y: {
+          ticks: { color: '#c9a84c' },
+          grid: { color: 'rgba(212,160,23,0.15)' },
+        },
+      },
+      plugins: {
+        legend: { labels: { color: '#f5e6c8', font: { size: 13 } } },
+        tooltip: {
+          callbacks: { label: context => ` ${context.dataset.label}: ${formatGold(context.parsed.y)}` },
+        },
+      },
+    },
+  });
+}
+
+function updateTradingChart(priceHistory, prices) {
+  if (!tradingChart) return;
+  const points = CONFIG.CHART_HISTORY_POINTS;
+  const spices = Object.keys(TRADING_SPICE_META);
+  spices.forEach((spice, idx) => {
+    const history = Array.isArray(priceHistory?.[spice]) ? [...priceHistory[spice]] : [];
+    if (!history.length && prices?.[spice] !== undefined) history.push(prices[spice]);
+    const padded = Array(Math.max(0, points - history.length)).fill(null).concat(history.slice(-points));
+    tradingChart.data.datasets[idx].data = padded;
+  });
+  tradingChart.update('none');
 }
