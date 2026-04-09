@@ -19,10 +19,15 @@ let currentPrices    = { ...CONFIG.STARTING_PRICES };
 let roundActive      = false;
 let roundStartTime   = null;
 
+/* Trade mode state */
+let tradeChart       = null;
+let priceHistory     = {};
+
 /* ── DOM refs (populated on DOMContentLoaded) ──────────────────────────── */
 let loginSection, adminPanel, codeInput, loginError;
+let tradeSection, btnTradeBack;
 let btnStart, btnStop, btnReset;
-let timerDisplay, timerDisplayLarge;
+let timerDisplay, timerDisplayLarge, tradeTimer;
 let lbBody;
 let priceEls = {};          // { pepper: el, cinnamon: el, cardamom: el }
 let eventLogEl;
@@ -47,13 +52,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 function bindDOMRefs() {
   loginSection  = document.getElementById('login-section');
   adminPanel    = document.getElementById('admin-panel');
+  tradeSection  = document.getElementById('trade-section');
   codeInput     = document.getElementById('admin-code-input');
   loginError    = document.getElementById('login-error');
+  btnTradeBack  = document.getElementById('btn-trade-back');
   btnStart      = document.getElementById('btn-start');
   btnStop       = document.getElementById('btn-stop');
   btnReset      = document.getElementById('btn-reset');
   timerDisplay      = document.getElementById('timer-display');
   timerDisplayLarge = document.getElementById('timer-display-large');
+  tradeTimer    = document.getElementById('trade-timer');
   lbBody        = document.getElementById('leaderboard-body');
   eventLogEl    = document.getElementById('event-log');
   eventBannerEl = document.getElementById('event-banner');
@@ -77,17 +85,40 @@ function setupLoginForm() {
       loginError.textContent = '';
       showAdminPanel();
       await bootAdminPanel();
+    } else if (entered === 'TRADE') {
+      // Show trade mode (live price chart)
+      showTradeMode();
+      await bootTradeMode();
     } else {
       loginError.textContent = '❌ Falscher Code. Bitte erneut versuchen.';
       codeInput.value = '';
       codeInput.focus();
     }
   });
+  
+  // Wire back button for trade mode
+  if (btnTradeBack) {
+    btnTradeBack.addEventListener('click', () => {
+      hideTradeMode();
+      codeInput.value = '';
+      codeInput.focus();
+    });
+  }
 }
 
 function showAdminPanel() {
   loginSection.classList.add('hidden');
   adminPanel.classList.remove('hidden');
+}
+
+function showTradeMode() {
+  loginSection.classList.add('hidden');
+  tradeSection.classList.remove('hidden');
+}
+
+function hideTradeMode() {
+  tradeSection.classList.add('hidden');
+  loginSection.classList.remove('hidden');
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -353,4 +384,128 @@ function appendEventLog(event) {
 
 function escHtml(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Trade Mode (Live Price Chart)
+ * ════════════════════════════════════════════════════════════════════════ */
+async function bootTradeMode() {
+  db = createDB(CONFIG);
+  await db.init();
+
+  // Subscribe to live updates
+  db.subscribeGameState(onTradeGameStateUpdate);
+
+  // Load initial state
+  const gs = await db.getGameState();
+  currentPrices = gs.prices ? { ...gs.prices } : { ...CONFIG.STARTING_PRICES };
+  roundActive = gs.active;
+  roundStartTime = gs.startTime;
+  if (gs.priceHistory) priceHistory = { ...gs.priceHistory };
+
+  // Initialize chart
+  initTradeChart();
+
+  // Update timer
+  updateTradeTimer();
+  setInterval(updateTradeTimer, 500);
+}
+
+function initTradeChart() {
+  const ctx = document.getElementById('trade-price-chart')?.getContext('2d');
+  if (!ctx || typeof Chart === 'undefined') return;
+
+  const SPICE_META = {
+    pepper:   { label: 'Pfeffer',   color: '#e74c3c', emoji: '🌶️' },
+    cinnamon: { label: 'Zimt',      color: '#e67e22', emoji: '🪵' },
+    cardamom: { label: 'Kardamom',  color: '#2ecc71', emoji: '🌿' },
+  };
+
+  const labels = Array.from({ length: CONFIG.CHART_HISTORY_POINTS }, (_, i) => i + 1);
+  const emptyData = () => Array(CONFIG.CHART_HISTORY_POINTS).fill(null);
+
+  tradeChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: Object.entries(SPICE_META).map(([spice, meta]) => ({
+        label:          meta.label,
+        data:           emptyData(),
+        borderColor:    meta.color,
+        backgroundColor: meta.color + '22',
+        borderWidth:    2,
+        pointRadius:    2,
+        tension:        0.3,
+        fill:           false,
+      })),
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      animation:           { duration: 500 },
+      scales: {
+        x: {
+          display: false,
+        },
+        y: {
+          ticks: { color: '#c9a84c' },
+          grid:  { color: 'rgba(212,160,23,0.15)' },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: { color: '#f5e6c8', font: { size: 13 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${formatGold(ctx.parsed.y)}`,
+          },
+        },
+      },
+    },
+  });
+
+  // Populate with existing price history
+  updateTradeChart();
+}
+
+function updateTradeChart() {
+  if (!tradeChart || !priceHistory) return;
+  const spices = ['pepper', 'cinnamon', 'cardamom'];
+  spices.forEach((spice, i) => {
+    const hist = priceHistory[spice] || [];
+    const pts  = CONFIG.CHART_HISTORY_POINTS;
+    // Pad short history with nulls on the left
+    const padded = Array(Math.max(0, pts - hist.length)).fill(null).concat(hist.slice(-pts));
+    tradeChart.data.datasets[i].data = padded;
+  });
+  tradeChart.update('none');
+}
+
+function onTradeGameStateUpdate(gs) {
+  const prevPrices = { ...currentPrices };
+  roundActive = gs.active;
+  roundStartTime = gs.startTime;
+  
+  if (gs.prices) {
+    currentPrices = { ...gs.prices };
+  }
+  
+  if (gs.priceHistory) {
+    priceHistory = { ...gs.priceHistory };
+    updateTradeChart();
+  }
+  
+  updateTradeTimer();
+}
+
+function updateTradeTimer() {
+  if (!tradeTimer) return;
+  if (!roundActive || !roundStartTime) {
+    tradeTimer.textContent = roundActive ? '…' : 'Warten…';
+    return;
+  }
+  const elapsed = (Date.now() - roundStartTime) / 1000;
+  const remaining = CONFIG.ROUND_DURATION - elapsed;
+  tradeTimer.textContent = formatTime(remaining);
 }

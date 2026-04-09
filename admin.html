@@ -8,6 +8,9 @@
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css" />
 
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+
   <!-- Game scripts (order matters) -->
   <script src="js/config.js"></script>
   <script src="js/game.js"></script>
@@ -45,6 +48,25 @@
         <button type="submit" class="btn btn-primary">Konsole entsperren</button>
         <div class="login-error" id="login-error" role="alert"></div>
       </form>
+      <p style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--cream-dim); border-top: 1px solid var(--gold-dim); padding-top: 1rem;">
+        💡 Tipp: Gib "TRADE" ein, um die Live-Preischarts anzuzeigen.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TRADE MODE  (shown when "TRADE" code is entered)
+  ══════════════════════════════════════════════════════════════════════ -->
+  <section id="trade-section" class="trade-section hidden">
+    <header class="trade-header">
+      <span class="brand">📈 Live-Gewürzpreise</span>
+      <div id="trade-timer">—</div>
+    </header>
+    <div class="chart-wrap trade-chart-wrap">
+      <canvas id="trade-price-chart"></canvas>
+    </div>
+    <div class="trade-footer">
+      <button id="btn-trade-back" class="btn btn-outline">← Zurück zum Login</button>
     </div>
   </section>
 

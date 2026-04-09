@@ -538,6 +538,52 @@ input[type="password"]:focus {
   .admin-panel { grid-template-columns: 1fr; }
 }
 
+/* ── Trade mode (price chart view) ──────────────────────────────────────── */
+.trade-section {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-deep);
+}
+
+.trade-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1a0a00 0%, #2d1500 50%, #1a0a00 100%);
+  border-bottom: 2px solid var(--gold-dim);
+  padding: 1rem 1.5rem;
+  gap: 1rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,.8);
+}
+
+.trade-header .brand {
+  font-size: 1.25rem;
+  color: var(--gold-light);
+}
+
+#trade-timer {
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.trade-chart-wrap {
+  flex: 1;
+  position: relative;
+  padding: 1.5rem;
+  min-height: 0;
+}
+
+.trade-footer {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #1a0a00 0%, #2d1500 50%, #1a0a00 100%);
+  border-top: 2px solid var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .admin-main { display: flex; flex-direction: column; gap: 1.25rem; }
 .admin-side { display: flex; flex-direction: column; gap: 1.25rem; }
 
