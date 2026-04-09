@@ -26,9 +26,9 @@ const CONFIG = {
     cardamom: 200,
   },
   STARTING_GOLD:       500,        // Gold coins every player starts with
-  MAX_FLUCTUATION:     0.04,       // Max random ±% per price tick (0.04 = ±4 %)
-  BUY_PRICE_IMPACT:    0.02,       // Price increase when someone buys (2 %)
-  SELL_PRICE_IMPACT:   0.02,       // Price decrease when someone sells (2 %)
+  MAX_FLUCTUATION:     0.05,       // Max random ±% per price tick (0.04 = ±4 %)
+  BUY_PRICE_IMPACT:    0.03,       // Price increase when someone buys (2 %)
+  SELL_PRICE_IMPACT:   0.03,       // Price decrease when someone sells (2 %)
   MIN_PRICE:           10,         // Prices never fall below this
 
   /* ── Timing ─────────────────────────────────────────────────────────── */
@@ -40,7 +40,7 @@ const CONFIG = {
   CHART_HISTORY_POINTS: 30,        // Number of data points shown on chart
 
   /* ── Database mode ──────────────────────────────────────────────────── */
-  DB_MODE: 'demo',                 // 'demo' | 'firebase'
+  DB_MODE: 'firebase',                 // 'demo' | 'firebase'
 
   /* ── Firebase config (only needed when DB_MODE = 'firebase') ─────────
    * 1. Go to https://console.firebase.google.com and create a project.
@@ -50,12 +50,13 @@ const CONFIG = {
    * 5. See README.md for the required Realtime Database security rules.
    */
   FIREBASE_CONFIG: {
-    apiKey:            'YOUR_API_KEY',
-    authDomain:        'YOUR_PROJECT_ID.firebaseapp.com',
-    databaseURL:       'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com',
-    projectId:         'YOUR_PROJECT_ID',
-    storageBucket:     'YOUR_PROJECT_ID.appspot.com',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    appId:             'YOUR_APP_ID',
+    apiKey: "AIzaSyDjXUwoP0nYwU0ANF73Zr77CYr9hRDz5Rw",
+    authDomain: "geschichte-spiel.firebaseapp.com",
+    databaseURL: "https://geschichte-spiel-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "geschichte-spiel",
+    storageBucket: "geschichte-spiel.firebasestorage.app",
+    messagingSenderId: "82513844067",
+    appId: "1:82513844067:web:9f58983ffa39ffbfd92556",
+    measurementId: "G-S956XBWKE2"
   },
 };
