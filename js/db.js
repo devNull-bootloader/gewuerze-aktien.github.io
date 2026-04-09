@@ -191,8 +191,11 @@ class FirebaseDB {
     // The SDK is loaded in admin.html and index.html when DB_MODE === 'firebase'.
     if (!window.firebase) throw new Error('Firebase SDK not loaded.');
 
-    firebase.initializeApp(this._cfg.FIREBASE_CONFIG);
-    this._db = firebase.database();
+    const firebaseApp = firebase.apps && firebase.apps.length
+      ? firebase.app()
+      : firebase.initializeApp(this._cfg.FIREBASE_CONFIG);
+
+    this._db = firebaseApp.database();
     this._gsRef = this._db.ref('game/state');
     this._plRef = this._db.ref('game/players');
 
