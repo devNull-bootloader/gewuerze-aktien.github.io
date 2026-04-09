@@ -273,6 +273,23 @@ input[type="password"]:focus {
   max-width: 340px;
 }
 
+.leaderboard-box {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.leaderboard-box h2 {
+  font-size: 2rem;
+  color: var(--gold-light);
+  margin-bottom: 1.5rem;
+}
+
+.leaderboard-box .leaderboard-table {
+  margin: 0 auto;
+}
+
 .spinner {
   width: 48px; height: 48px;
   border: 4px solid var(--gold-dim);

@@ -325,7 +325,16 @@ function onGameStateUpdate(gs) {
   // Show/hide waiting overlay (only if player has joined)
   if (playerId) {
     const overlay = document.getElementById('waiting-overlay');
-    if (overlay) overlay.classList.toggle('hidden', gs.active);
+    if (overlay) {
+      overlay.classList.toggle('hidden', gs.active);
+      
+      // Show leaderboard when round ends (was active, now not active)
+      if (wasActive && !gs.active) {
+        showLeaderboardOverlay();
+      } else if (!wasActive && gs.active) {
+        hideLeaderboardOverlay();
+      }
+    }
   }
 
   // Enable/disable trade buttons based on round state
@@ -356,6 +365,12 @@ function onPlayersUpdate(players) {
   playerGold     = me.gold     ?? playerGold;
   playerHoldings = me.holdings ?? playerHoldings;
   updatePortfolioDisplay();
+  
+  // If leaderboard is visible, refresh it
+  const leaderboardContent = document.getElementById('leaderboard-content');
+  if (leaderboardContent && !leaderboardContent.classList.contains('hidden')) {
+    renderLeaderboard(players, currentPrices);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -410,4 +425,66 @@ function showToast(message) {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 400);
   }, 3000);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Leaderboard display
+ * ════════════════════════════════════════════════════════════════════════ */
+function renderLeaderboard(players, prices) {
+  const lbBody = document.getElementById('player-leaderboard-body');
+  if (!lbBody) return;
+  
+  const entries = Object.values(players)
+    .filter(p => p.name)
+    .map(p => ({
+      name:     p.name,
+      gold:     p.gold || 0,
+      holdings: p.holdings || { pepper: 0, cinnamon: 0, cardamom: 0 },
+      worth:    calcNetWorth(p.gold || 0, p.holdings || {}, prices),
+    }))
+    .sort((a, b) => b.worth - a.worth);
+
+  lbBody.innerHTML = '';
+  entries.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`;
+    tr.innerHTML = `
+      <td>${medal}</td>
+      <td>${escHtml(e.name)}</td>
+      <td>${formatGold(e.worth)}</td>
+      <td>${formatGold(e.gold)}</td>
+      <td>${e.holdings.pepper || 0} / ${e.holdings.cinnamon || 0} / ${e.holdings.cardamom || 0}</td>`;
+    if (i === 0) tr.classList.add('rank-gold');
+    else if (i === 1) tr.classList.add('rank-silver');
+    else if (i === 2) tr.classList.add('rank-bronze');
+    lbBody.appendChild(tr);
+  });
+
+  if (!entries.length) {
+    lbBody.innerHTML = '<tr><td colspan="5" style="text-align:center;opacity:.6">Noch keine Spieler</td></tr>';
+  }
+}
+
+function showLeaderboardOverlay() {
+  // Fetch latest players to show in leaderboard
+  if (!db) return;
+  db.getPlayers().then(players => {
+    renderLeaderboard(players, currentPrices);
+    
+    const waitingContent = document.getElementById('waiting-content');
+    const leaderboardContent = document.getElementById('leaderboard-content');
+    if (waitingContent) waitingContent.classList.add('hidden');
+    if (leaderboardContent) leaderboardContent.classList.remove('hidden');
+  });
+}
+
+function hideLeaderboardOverlay() {
+  const waitingContent = document.getElementById('waiting-content');
+  const leaderboardContent = document.getElementById('leaderboard-content');
+  if (waitingContent) waitingContent.classList.remove('hidden');
+  if (leaderboardContent) leaderboardContent.classList.add('hidden');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

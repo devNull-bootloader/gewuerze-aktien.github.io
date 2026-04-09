@@ -108,10 +108,29 @@
 
   <!-- ── Waiting overlay (shown when round is not active, after joining) -->
   <div id="waiting-overlay" class="waiting-overlay hidden">
-    <div class="waiting-box">
+    <div class="waiting-box" id="waiting-content">
       <div class="spinner"></div>
       <h2>Auf die Marktglocke warten…</h2>
       <p>Die Runde hat noch nicht begonnen. Warte auf deinen Lehrer, um den Handel zu eröffnen.</p>
+    </div>
+    
+    <!-- Leaderboard shown after round ends -->
+    <div class="leaderboard-box hidden" id="leaderboard-content">
+      <h2>🏆 Rangliste</h2>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Händler</th>
+            <th>Nettovermögen</th>
+            <th>Gold</th>
+            <th>P / Z / K</th>
+          </tr>
+        </thead>
+        <tbody id="player-leaderboard-body">
+          <tr><td colspan="5" style="text-align:center;opacity:.6">Noch keine Spieler</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
