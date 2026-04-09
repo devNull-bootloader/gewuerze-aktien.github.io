@@ -111,7 +111,7 @@ function showGameUI() {
   const overlay = document.getElementById('waiting-overlay');
   if (overlay) overlay.classList.toggle('hidden', roundActive);
   updatePublicLeaderboardVisibility();
-  renderPublicLeaderboard(latestPlayers, currentPrices);
+  if (!roundActive) renderPublicLeaderboard(latestPlayers, currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -324,8 +324,8 @@ function onGameStateUpdate(gs) {
   // Update price cards
   updateSpiceCardPrices(currentPrices, prevPrices);
   updatePortfolioDisplay();
-  renderPublicLeaderboard(latestPlayers, currentPrices);
   updatePublicLeaderboardVisibility();
+  if (!roundActive) renderPublicLeaderboard(latestPlayers, currentPrices);
 
   // Show/hide waiting overlay (only if player has joined)
   if (playerId) {
@@ -362,7 +362,7 @@ function onPlayersUpdate(players) {
   playerGold     = me.gold     ?? playerGold;
   playerHoldings = me.holdings ?? playerHoldings;
   updatePortfolioDisplay();
-  renderPublicLeaderboard(latestPlayers, currentPrices);
+  if (!roundActive) renderPublicLeaderboard(latestPlayers, currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════

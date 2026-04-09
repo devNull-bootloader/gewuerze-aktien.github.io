@@ -20,7 +20,6 @@ let roundActive      = false;
 let roundStartTime   = null;
 let tradingMode      = false;
 let tradingChart     = null;
-let latestGameState  = null;
 const TRADING_VIEW_CODE = 'TRADING';
 const TRADING_SPICE_META = {
   pepper:   { label: 'Pfeffer', color: '#e74c3c' },
@@ -48,9 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Check if already authenticated this session
   const savedAuth = sessionStorage.getItem('spice_admin_auth');
-  const savedMode = sessionStorage.getItem('spice_admin_mode');
-  if (savedAuth === CONFIG.ADMIN_CODE || (savedAuth === TRADING_VIEW_CODE && savedMode === 'trading')) {
-    tradingMode = savedAuth === TRADING_VIEW_CODE && savedMode === 'trading';
+  if (savedAuth === CONFIG.ADMIN_CODE || savedAuth === TRADING_VIEW_CODE) {
+    tradingMode = savedAuth === TRADING_VIEW_CODE;
     showAuthenticatedView();
     await bootByMode();
   }
@@ -171,7 +169,6 @@ async function bootTradingPanel() {
   initTradingChart();
   db.subscribeGameState(onGameStateUpdate);
   const gs = await db.getGameState();
-  latestGameState = gs;
   applyGameState(gs);
   updateTradingChart(gs.priceHistory || {}, gs.prices || currentPrices);
 }
@@ -308,7 +305,6 @@ async function fireEvent(event) {
  * Reactive updates from DB
  * ════════════════════════════════════════════════════════════════════════ */
 function onGameStateUpdate(gs) {
-  latestGameState = gs;
   applyGameState(gs);
   if (tradingMode) updateTradingChart(gs.priceHistory || {}, gs.prices || currentPrices);
 }
