@@ -423,7 +423,7 @@ function initTradingChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 200 },
+      animation: { duration: 400 },
       scales: {
         x: { display: false },
         y: {

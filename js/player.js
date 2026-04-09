@@ -111,7 +111,6 @@ function showGameUI() {
   const overlay = document.getElementById('waiting-overlay');
   if (overlay) overlay.classList.toggle('hidden', roundActive);
   updatePublicLeaderboardVisibility();
-  if (!roundActive) renderPublicLeaderboard(latestPlayers, currentPrices);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
