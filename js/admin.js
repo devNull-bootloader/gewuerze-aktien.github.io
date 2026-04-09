@@ -88,7 +88,6 @@ function setupLoginForm() {
     if (entered === CONFIG.ADMIN_CODE || entered === TRADING_VIEW_CODE) {
       tradingMode = entered === TRADING_VIEW_CODE;
       sessionStorage.setItem('spice_admin_auth', entered);
-      sessionStorage.setItem('spice_admin_mode', tradingMode ? 'trading' : 'admin');
       loginError.textContent = '';
       showAuthenticatedView();
       await bootByMode();
