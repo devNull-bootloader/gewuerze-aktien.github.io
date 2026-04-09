@@ -197,7 +197,7 @@ class FirebaseDB {
 
     this._db = firebaseApp.database();
     this._gsRef = this._db.ref('game/state');
-    this._plRef = this._db.ref('players');
+    this._plRef = this._db.ref('game/players');
 
     // Ensure default game state exists
     const snap = await this._gsRef.once('value');
